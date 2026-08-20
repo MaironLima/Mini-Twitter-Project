@@ -10,9 +10,6 @@ RUN bun install --frozen-lockfile
 # Copy the rest of the application code
 COPY . .
 
-# Create an empty database file if it doesn't exist
-RUN touch db.sqlite
-
 # Expose the port Elysia is running on
 EXPOSE 3000
 
