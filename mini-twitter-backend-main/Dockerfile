@@ -14,4 +14,4 @@ COPY . .
 EXPOSE 3000
 
 # Run the application
-CMD ["bun", "run", "src/index.ts"]
+CMD ["sh", "-c", "bun x prisma db push && bun run src/index.ts"]
