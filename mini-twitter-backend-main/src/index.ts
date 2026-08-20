@@ -5,11 +5,17 @@ import { cors } from "@elysiajs/cors";
 import { authRoutes } from "./routes/auth.routes";
 import { postRoutes } from "./routes/post.routes";
 import { initDb } from "./db";
+import { rateLimit } from "elysia-rate-limit";
 
 // Iniciar conexão com banco de dados
 await initDb();
 
 const app = new Elysia()
+  .use(rateLimit({
+      duration: 60_000,
+      max: 10,
+    }),)
+
   .use(swagger({
     documentation: {
       info: {
