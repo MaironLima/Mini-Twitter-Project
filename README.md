@@ -7,7 +7,7 @@ A modern, lightweight fullstack application inspired by Twitter. Built with Type
 ## 🚀 Deployments
 
 - **Frontend Live:** [mini-twitter-sage.vercel.app](https://mini-twitter-sage.vercel.app/) (hosted on Vercel)
-- **Backend:** Deployed on [Railway](https://railway.app/) _(replace this with your public Railway endpoint/link, if available)_
+- **Backend + Database:** Deployed on an **Oracle Virtual Machine** using **Docker/Docker Compose**
 
 ---
 
@@ -33,8 +33,8 @@ A modern, lightweight fullstack application inspired by Twitter. Built with Type
 - Core Twitter-like timeline and post interactions
 - Modular, integration-ready architecture
 - Complete REST API (Bun + ElysiaJS) with JWT authentication
-- Easy Docker/Docker Compose for the backend
-- One-click deploys (see below)
+- Easy Docker/Docker Compose setup for backend + database
+- One-click frontend deploy on Vercel
 
 ## Tech Stack
 
@@ -44,6 +44,7 @@ A modern, lightweight fullstack application inspired by Twitter. Built with Type
 - **Other** (1.2%)
 - **Frontend:** React + Vite + TypeScript (see `/mini-twitter-frontend-main`)
 - **Backend:** Bun + ElysiaJS (see `/mini-twitter-backend-main`)
+- **Infra/Deployment:** Oracle VM + Docker/Docker Compose
 
 ## Getting Started
 
@@ -52,6 +53,7 @@ A modern, lightweight fullstack application inspired by Twitter. Built with Type
 - [Node.js](https://nodejs.org/) (v16+ recommended)
 - [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
 - [Bun](https://bun.sh/) (for backend, optional if using Docker)
+- [Docker](https://www.docker.com/) + Docker Compose
 
 ---
 
@@ -84,14 +86,20 @@ To redeploy or fork:
 cd mini-twitter-backend-main
 docker-compose up -d
 ```
+
 API available at `http://localhost:3000`
 
-#### Railway Deployment
+#### Production Deployment (Oracle VM)
 
-Backend is deployed on Railway. *(Provide public endpoint link here if available, or edit this line)*.
+Backend and database are deployed on an **Oracle Virtual Machine** using **Docker/Docker Compose**.
 
-To redeploy or fork:
-- [![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template) <!-- Replace with your Railway template or repo link if you have one -->
+Example production flow:
+1. Provision Oracle VM
+2. Install Docker + Docker Compose
+3. Clone repository
+4. Configure environment variables (`.env`)
+5. Start services with `docker-compose up -d`
+6. Expose required ports / configure reverse proxy (optional)
 
 #### Local (Bun)
 
@@ -108,10 +116,9 @@ API docs: [http://localhost:3000/swagger](http://localhost:3000/swagger)
 
 ## Project Structure
 
-```
 /mini-twitter-frontend-main
 /mini-twitter-backend-main
-```
+
 See respective READMEs for full details.
 
 ---
