@@ -1,31 +1,32 @@
-
 services:
-  db:
-    image: postgres:15
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgrespassword
-      POSTGRES_DB: mini_twitter
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
+  postgres:
+    image: postgres:15-alpine
+    container_name: postgres-mini-twitter
     restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-db_mini_twitter}
+      POSTGRES_USER: ${POSTGRES_USER:-user_mini_twitter}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
-  api:
-    build: .
-    depends_on:
-      - db
+  backend:
+    build: ./backend
+    container_name: backend-mini-twitter
+    restart: always
     ports:
       - "3000:3000"
-    volumes:
-      - .:/app
-      - /app/node_modules
     environment:
-      - JWT_SECRET=sua-chave-secreta-aqui
-      - DATABASE_URL=postgresql://postgres:postgrespassword@db:5432/mini_twitter
-    restart: always
+      DATABASE_URL: postgres://${POSTGRES_USER:-user_mini_twitter}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-db_mini_twitter}
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
 
 volumes:
-  postgres_data:
-
+  pgdata:

@@ -1,68 +1,57 @@
-# Mini Twitter Backend - Bun & ElysiaJS
+# Mini Twitter
 
-Este é o back-end de uma mini rede social construída com **Bun** e **ElysiaJS**, focada em performance, segurança e facilidade de consumo por front-ends modernos.
-
-## 🚀 Tecnologias
-
-- **Runtime**: [Bun](https://bun.sh/)
-- **Framework**: [ElysiaJS](https://elysiajs.com/)
-- **Banco de Dados**: SQLite (via `bun:sqlite`)
-- **Autenticação**: JWT com Blacklist para logout
-- **Documentação**: Swagger/OpenAPI
-- **Containerização**: Docker & Docker Compose
-
-## 🛠️ Funcionalidades
-
-- **Autenticação Completa**: Registro, Login e Logout (com invalidação de token).
-- **CRUD de Posts**: Criação, listagem, edição e exclusão.
-- **Segurança**: Apenas o autor de um post pode editá-lo ou excluí-lo.
-- **Paginação e Busca**: Listagem de posts com suporte a `page` e `search` (por título).
-- **Sistema de Likes**: Toggle de likes em posts (apenas um por usuário).
-- **Validação**: Limite de 5MB para imagens e campos obrigatórios validados via TypeBox.
-
-## 📦 Como Rodar com Docker
-
-A maneira mais fácil de iniciar o projeto é usando Docker:
-
-```bash
-# Iniciar o container
-docker-compose up -d
+```
+backend/                     API em Java 26 puro (com.sun.net.httpserver + JDBC, sem framework)
+mini-twitter-frontend-main/  Frontend React + Vite (inalterado)
+docker-compose.yml           Postgres + backend
 ```
 
-A API estará disponível em `http://localhost:3000`.
-
-## 💻 Como Rodar Localmente
-
-Certifique-se de ter o [Bun](https://bun.sh/) instalado.
+## Rodar com Docker
 
 ```bash
-# Instalar dependências
-bun install
-
-# Popular o banco de dados com dados iniciais
-bun run seed
-
-# Iniciar em modo de desenvolvimento
-bun run dev
+cp .env.example .env   # ajuste senha e JWT_SECRET
+docker compose up -d --build
 ```
 
-## 📖 Documentação da API
+API em `http://localhost:3000`. Popular o banco com dados de exemplo:
 
-Após iniciar o servidor, a documentação interativa (Swagger) pode ser acessada em:
-`http://localhost:3000/swagger`
+```bash
+docker compose exec backend java -cp out:lib/postgresql.jar Seed
+```
 
-## 🗄️ Estrutura do Projeto
+## Rodar o backend local (sem Docker)
 
-- `src/index.ts`: Ponto de entrada e configurações globais.
-- `src/routes/`: Definição dos endpoints e validações.
-- `src/services/`: Lógica de negócio e acesso ao banco de dados.
-- `src/db.ts`: Configuração e esquema do SQLite.
-- `seed.ts`: Script para popular o banco de dados.
+Requer JDK 26 e um Postgres acessível via `DATABASE_URL`.
 
-## 🔒 Variáveis de Ambiente
+```bash
+cd backend
+curl -Lo lib/postgresql.jar --create-dirs https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.14/postgresql-42.7.14.jar
+javac -cp lib/postgresql.jar -d out src/*.java
+DATABASE_URL=postgres://user:senha@localhost:5432/db JWT_SECRET=segredo java -cp "out:lib/postgresql.jar" Main
+```
 
-O projeto utiliza as seguintes variáveis (configuradas com valores padrão):
-- `JWT_SECRET`: Chave secreta para assinatura dos tokens.
+No Windows use `;` no classpath (`"out;lib/postgresql.jar"`). Teste rápido de Json/Jwt: `javac -d out src/*.java test/*.java && java -ea -cp out Check`.
 
----
-Desenvolvido para o processo seletivo da B2Bit.
+## Variáveis de ambiente (backend)
+
+| Variável       | Padrão                                                  |
+|----------------|---------------------------------------------------------|
+| `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/postgres` |
+| `JWT_SECRET`   | `super-secret-key`                                      |
+| `PORT`         | `3000`                                                  |
+| `RATE_LIMIT`   | `10` (requisições por minuto por IP)                    |
+
+## Endpoints
+
+| Método | Rota               | Auth | Descrição                          |
+|--------|--------------------|------|------------------------------------|
+| POST   | `/auth/register`   |      | `{name, email, password}`          |
+| POST   | `/auth/login`      |      | `{email, password}` → `{token, user}` |
+| POST   | `/auth/logout`     | ✓    | Invalida o token                   |
+| GET    | `/posts?page=&search=` |  | Lista paginada (10 por página)     |
+| POST   | `/posts`           | ✓    | `{title, content, image?}`         |
+| PUT    | `/posts/:id`       | ✓    | Só o autor                         |
+| DELETE | `/posts/:id`       | ✓    | Só o autor                         |
+| POST   | `/posts/:id/like`  | ✓    | Alterna like → `{liked}`           |
+
+Rate limit: 10 requisições/minuto por IP.
