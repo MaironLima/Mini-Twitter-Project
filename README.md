@@ -1,138 +1,57 @@
-# Mini-Twitter-Project
+# Mini Twitter
 
-A modern, lightweight fullstack application inspired by Twitter. Built with TypeScript, CSS, and JavaScript.
-
----
-
-## 🚀 Deployments
-
-- **Frontend Live:** [mini-twitter-sage.vercel.app](https://mini-twitter-sage.vercel.app/) (hosted on Vercel)
-- **Backend + Database:** Deployed on an **Oracle Virtual Machine** using **Docker/Docker Compose**
-
----
-
-## Table of Contents
-
-- [Overview](#overview)
-- [Deployments](#deployments)
-- [Features](#features)
-- [Tech Stack](#tech-stack)
-- [Getting Started](#getting-started)
-- [Project Structure](#project-structure)
-- [Contributing](#contributing)
-- [License](#license)
-
-## Overview
-
-**Mini-Twitter-Project** is a scalable and maintainable fullstack Twitter clone built to demonstrate solid frontend and backend engineering practices using TypeScript, React, Bun, and ElysiaJS.
-
-## Features
-
-- TypeScript for type safety and maintainability
-- Clean, responsive design (CSS)
-- Core Twitter-like timeline and post interactions
-- Modular, integration-ready architecture
-- Complete REST API (Bun + ElysiaJS) with JWT authentication
-- Easy Docker/Docker Compose setup for backend + database
-- One-click frontend deploy on Vercel
-
-## Tech Stack
-
-- **TypeScript** (88.4%)
-- **CSS** (9%)
-- **JavaScript** (1.4%)
-- **Other** (1.2%)
-- **Frontend:** React + Vite + TypeScript (see `/mini-twitter-frontend-main`)
-- **Backend:** Bun + ElysiaJS (see `/mini-twitter-backend-main`)
-- **Infra/Deployment:** Oracle VM + Docker/Docker Compose
-
-## Getting Started
-
-### Prerequisites
-
-- [Node.js](https://nodejs.org/) (v16+ recommended)
-- [npm](https://www.npmjs.com/) or [yarn](https://yarnpkg.com/)
-- [Bun](https://bun.sh/) (for backend, optional if using Docker)
-- [Docker](https://www.docker.com/) + Docker Compose
-
----
-
-### Frontend
-
-#### Local Development
-
-```bash
-cd mini-twitter-frontend-main
-npm install   # or yarn
-npm start     # or yarn start
+```
+backend/                     API em Java 26 puro (com.sun.net.httpserver + JDBC, sem framework)
+mini-twitter-frontend-main/  Frontend React + Vite (inalterado)
+docker-compose.yml           Postgres + backend
 ```
 
-Visit [http://localhost:5173](http://localhost:5173)
-
-#### Vercel Deployment
-
-Frontend is deployed at: [mini-twitter-sage.vercel.app](https://mini-twitter-sage.vercel.app/)
-
-To redeploy or fork:
-- [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/import/project?template=https://github.com/MaironLima/Mini-Twitter-Project/tree/main/mini-twitter-frontend-main)
-
----
-
-### Backend
-
-#### Docker (Recommended)
+## Rodar com Docker
 
 ```bash
-cd mini-twitter-backend-main
-docker-compose up -d
+cp .env.example .env   # ajuste senha e JWT_SECRET
+docker compose up -d --build
 ```
 
-API available at `http://localhost:3000`
-
-#### Production Deployment (Oracle VM)
-
-Backend and database are deployed on an **Oracle Virtual Machine** using **Docker/Docker Compose**.
-
-Example production flow:
-1. Provision Oracle VM
-2. Install Docker + Docker Compose
-3. Clone repository
-4. Configure environment variables (`.env`)
-5. Start services with `docker-compose up -d`
-6. Expose required ports / configure reverse proxy (optional)
-
-#### Local (Bun)
+API em `http://localhost:3000`. Popular o banco com dados de exemplo:
 
 ```bash
-cd mini-twitter-backend-main
-bun install
-bun run seed
-bun run dev
+docker compose exec backend java -cp out:lib/postgresql.jar Seed
 ```
 
-API docs: [http://localhost:3000/swagger](http://localhost:3000/swagger)
+## Rodar o backend local (sem Docker)
 
----
+Requer JDK 26 e um Postgres acessível via `DATABASE_URL`.
 
-## Project Structure
+```bash
+cd backend
+curl -Lo lib/postgresql.jar --create-dirs https://repo1.maven.org/maven2/org/postgresql/postgresql/42.7.14/postgresql-42.7.14.jar
+javac -cp lib/postgresql.jar -d out src/*.java
+DATABASE_URL=postgres://user:senha@localhost:5432/db JWT_SECRET=segredo java -cp "out:lib/postgresql.jar" Main
+```
 
-/mini-twitter-frontend-main
-/mini-twitter-backend-main
+No Windows use `;` no classpath (`"out;lib/postgresql.jar"`). Teste rápido de Json/Jwt: `javac -d out src/*.java test/*.java && java -ea -cp out Check`.
 
-See respective READMEs for full details.
+## Variáveis de ambiente (backend)
 
----
+| Variável       | Padrão                                                  |
+|----------------|---------------------------------------------------------|
+| `DATABASE_URL` | `postgresql://postgres:postgres@localhost:5432/postgres` |
+| `JWT_SECRET`   | `super-secret-key`                                      |
+| `PORT`         | `3000`                                                  |
+| `RATE_LIMIT`   | `10` (requisições por minuto por IP)                    |
 
-## Contributing
+## Endpoints
 
-Contributions are welcome! Please submit issues or pull requests.
+| Método | Rota               | Auth | Descrição                          |
+|--------|--------------------|------|------------------------------------|
+| POST   | `/auth/register`   |      | `{name, email, password}`          |
+| POST   | `/auth/login`      |      | `{email, password}` → `{token, user}` |
+| POST   | `/auth/logout`     | ✓    | Invalida o token                   |
+| GET    | `/posts?page=&search=` |  | Lista paginada (10 por página)     |
+| POST   | `/posts`           | ✓    | `{title, content, image?}`         |
+| PUT    | `/posts/:id`       | ✓    | Só o autor                         |
+| DELETE | `/posts/:id`       | ✓    | Só o autor                         |
+| POST   | `/posts/:id/like`  | ✓    | Alterna like → `{liked}`           |
 
-1. Fork the repository
-2. Create your feature branch (`git checkout -b feature/YourFeature`)
-3. Commit your changes
-4. Push to your branch
-5. Open a pull request
-
-## License
-
-[MIT](LICENSE) © [MaironLima](https://github.com/MaironLima)
+Rate limit: 10 requisições/minuto por IP.

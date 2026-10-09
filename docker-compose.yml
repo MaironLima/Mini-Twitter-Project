@@ -1,0 +1,30 @@
+services:
+  postgres:
+    image: postgres:15-alpine
+    restart: always
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-db_mini_twitter}
+      POSTGRES_USER: ${POSTGRES_USER:-user_mini_twitter}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  backend:
+    build: ./backend
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: postgres://${POSTGRES_USER:-user_mini_twitter}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB:-db_mini_twitter}
+      JWT_SECRET: ${JWT_SECRET:?defina JWT_SECRET no .env}
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  pgdata:

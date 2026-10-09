@@ -1,0 +1,5 @@
+.env
+backend/out/
+backend/lib/
+*.log
+dump.sql
